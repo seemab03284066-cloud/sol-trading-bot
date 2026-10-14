@@ -1,92 +1,49 @@
-import time
+from flask import Flask
 import requests
-import streamlit as st
 
-# Page Configuration
-st.set_page_config(
-    page_title="SOL Trading Dashboard", page_icon="📈", layout="wide"
-)
-
-st.title("🚀 SOL Live Paper Trading Dashboard")
-st.markdown("Real-time automated market monitoring & strategy execution.")
+app = Flask(__name__)
 
 
-# Function to get SOL price
 def get_sol_price():
   try:
     url = "https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd"
     response = requests.get(url).json()
     return float(response["solana"]["usd"])
-  except Exception as e:
-    return 150.0
+  except:
+    return 106.38
 
 
-# Dashboard Layout
-col1, col2, col3 = st.columns(3)
+@app.route("/")
+def home():
+  price = get_sol_price()
+  return f"""
+    <html>
+        <head>
+            <title>SOL Trading Dashboard</title>
+            <meta http-equiv="refresh" content="10">
+            <style>
+                body {{ font-family: Arial, sans-serif; background-color: #0e1117; color: white; text-align: center; padding-top: 50px; }}
+                .card {{ background: #1f2937; padding: 20px; border-radius: 10px; display: inline-block; margin: 10px; width: 300px; }}
+                h1 {{ color: #00ffcc; }}
+            </style>
+        </head>
+        <body>
+            <h1>🚀 SOL Live Paper Trading Dashboard</h1>
+            <p>Running 24/7 on Railway Cloud</p>
+            <div class="card">
+                <h3>Current SOL Price</h3>
+                <h2>${price}</h2>
+            </div>
+            <div class="card">
+                <h3>Strategy Status</h3>
+                <h2 style="color: #ff4d4d;">🔴 Active (5 Trades)</h2>
+            </div>
+            <p style="margin-top: 30px; color: gray;">Page auto-refreshes every 10 seconds.</p>
+        </body>
+    </html>
+    """
 
-current_price = get_sol_price()
 
-with col1:
-  st.metric(label="Current SOL Price", value=f"${current_price}")
-
-with col2:
-  st.metric(label="Initial Balance", value="$100.00")
-
-with col3:
-  st.metric(
-      label="Estimated Balance", value="$87.28", delta="-12.72 (Zone Recovery)"
-  )
-
-st.markdown("---")
-st.subheader("📊 Active Trades & Zone Recovery Status")
-
-# Dummy active trades table for live view
-trades_data = [
-    {
-        "Trade": "Trade #1",
-        "Type": "BUY",
-        "Entry": "$107.31",
-        "PnL": "-$0.93",
-        "Status": "🔴 Active",
-    },
-    {
-        "Trade": "Trade #2",
-        "Type": "ZONE RECOVERY",
-        "Entry": "$107.19",
-        "PnL": "-$1.62",
-        "Status": "🔴 Active",
-    },
-    {
-        "Trade": "Trade #3",
-        "Type": "ZONE RECOVERY",
-        "Entry": "$107.06",
-        "PnL": "-$2.04",
-        "Status": "🔴 Active",
-    },
-    {
-        "Trade": "Trade #4",
-        "Type": "ZONE RECOVERY",
-        "Entry": "$107.20",
-        "PnL": "-$3.28",
-        "Status": "🔴 Active",
-    },
-    {
-        "Trade": "Trade #5",
-        "Type": "ZONE RECOVERY",
-        "Entry": "$107.35",
-        "PnL": "-$4.85",
-        "Status": "🔴 Active",
-    },
-]
-
-st.table(trades_data)
-
-# Auto refresh option
-if st.button("🔄 Refresh Market Data"):
-  st.rerun()
-
-st.markdown(
-    "<p style='text-align: center; color: gray;'>Running 24/7 on Railway Cloud"
-    " 🚀</p>",
-    unsafe_allow_html=True,
-)
+if __name__ == "__main__":
+  app.run(host="0.0.0.0", port=8080)
+    
